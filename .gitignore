@@ -5,7 +5,7 @@ wp-content/uploads
 wp-content/languages/
 wp-content/backups-dup-lite/
 wp-content/plugins/*
-!wp-content/plugins/artko-submissions/
+!wp-content/plugins/artkko-submissions/
 
 # themes - this is important, you should not modify them, so put them here as a reminder
 wp-content/themes/twenty*
