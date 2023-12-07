@@ -9,18 +9,29 @@
  *
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
+if (!defined('ABSPATH')) {
     die("You should not be here!");
 }
 
 
-if(!class_exists('ArtkkoSubmissions')) {
+if (!class_exists('ArtkkoSubmissions')) {
 
     class ArtkkoSubmissions
     {
+        public function __construct()
+        {
+            define('ARTKKO_SUBMISSIONS_PATH', plugin_dir_path(__FILE__));
+            require_once(ARTKKO_SUBMISSIONS_PATH . 'vendor/autoload.php');
+        }
 
+        public function initialize(): void
+        {
+            include_once ARTKKO_SUBMISSIONS_PATH . 'includes/utils.php';
+            include_once ARTKKO_SUBMISSIONS_PATH . 'option-page/index.php';
+        }
 
     }
 
-    new ArtkkoSubmissions;
+    $submissionsPlugin = new ArtkkoSubmissions;
+    $submissionsPlugin->initialize();
 }

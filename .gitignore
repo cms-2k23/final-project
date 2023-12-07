@@ -37,3 +37,5 @@ wp-includes
 .env
 build.env
 deploy.env
+
+vendor/
