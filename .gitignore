@@ -6,7 +6,7 @@ wp-content/languages/
 wp-content/backups-dup-lite/
 wp-content/plugins/*
 !wp-content/plugins/artkko-submissions/
-
+wp-content/plugins/artkko-submissions/wp-content
 # themes - this is important, you should not modify them, so put them here as a reminder
 wp-content/themes/twenty*
 

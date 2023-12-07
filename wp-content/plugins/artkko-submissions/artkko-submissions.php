@@ -27,7 +27,8 @@ if (!class_exists('ArtkkoSubmissions')) {
         public function initialize(): void
         {
             include_once ARTKKO_SUBMISSIONS_PATH . 'includes/utils.php';
-            include_once ARTKKO_SUBMISSIONS_PATH . 'option-page/index.php';
+            include_once ARTKKO_SUBMISSIONS_PATH . 'option-page/option-page.php';
+            include_once ARTKKO_SUBMISSIONS_PATH . 'contact-form/contact-form.php';
         }
 
     }
