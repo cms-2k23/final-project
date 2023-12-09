@@ -168,26 +168,72 @@ function create_rest_endpoint()
     ));
 }
 
+function send_confirmation_to_customer($headers, $params)
+{
+    $customer_email = strtolower(trim(sanitize_email($params['email'])));
+    $customer_name = sanitize_text_field($params['name']);
+
+    $headers[] = "Reply-to: {$customer_name} <{$customer_email}>";
+    $subject = "Commission confirmation";
+
+    $message = "<p>Your request was successfully sent. Artist should contact you in a couple of days!</p>";
+    wp_mail($customer_email, $subject, $message, $headers);
+}
+
+function send_confirmation_to_artist($headers, $params)
+{
+    $artist_email = strtolower(trim(sanitize_email($params['artist_email'])));
+    $customer_email = strtolower(trim(sanitize_email($params['email'])));
+
+    $artist_name = sanitize_email($params['artist_name']);
+    $customer_name = sanitize_text_field($params['name']);
+
+
+    $headers[] = "Reply-to: {$artist_name} <{$artist_email}>";
+    $subject = "New commission request";
+
+    $message = "<p>You have new request from {$customer_name}. To contact him write on {$customer_email}</p>";
+    $postarr = [
+        'post_title' => $params['name'],
+        'post_type' => 'submission',
+        'post_status' => 'publish'
+    ];
+
+    $post_id = wp_insert_post($postarr);
+    foreach ($params as $label => $value) {
+        $value = match ($label) {
+            'message' => sanitize_textarea_field($value),
+            'email' => sanitize_email($value),
+            default => sanitize_text_field($value),
+        };
+
+        add_post_meta($post_id, sanitize_text_field($label), $value);
+        $message .= '<strong>' . sanitize_text_field(ucfirst($label)) . ':</strong> ' . $value . '<br />';
+    }
+    wp_mail($customer_email, $subject, $message, $headers);
+}
+
+
 function handle_submission_form($data)
 {
-    // Handle the form data that is posted
-
-    // Get all parameters from form
     $params = $data->get_params();
-    $field_name = sanitize_text_field($params['name']);
-    $field_email = sanitize_email($params['email']);
-    $field_phone = sanitize_text_field($params['phone']);
-    $field_message = sanitize_textarea_field($params['message']);
 
-
-    // Check if nonce is valid, if not, respond back with error
     if (!wp_verify_nonce($params['_wpnonce'], 'wp_rest')) {
-
         return new WP_Rest_Response('Message not sent', 422);
     }
 
-    // Remove unneeded data from paramaters
     unset($params['_wpnonce']);
     unset($params['_wp_http_referer']);
 
+    $headers = [];
+
+    $admin_email = get_bloginfo('admin_email');
+    $admin_name = get_bloginfo('name');
+
+    $headers[] = "From: {$admin_name} <{$admin_email}>";
+    $headers[] = "Content-Type: text/html";
+    send_confirmation_to_customer($headers, $params);
+    send_confirmation_to_artist($headers, $params);
+
+    return new WP_Rest_Response("The submission was accepted!!", 200);
 }
