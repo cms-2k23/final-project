@@ -12,10 +12,35 @@ add_shortcode('show_submission_button', 'show_submission_button');
 
 add_filter('query_vars', 'register_custom_params');
 
+add_action('init', 'create_submissions_page');
+
+function create_submissions_page()
+{
+    $args = [
+        'public' => true,
+        'has_archive' => true,
+        'menu_position' => 30,
+        'publicly_queryable' => false,
+        'labels' => [
+            'name' => 'Submissions',
+            'singular_name' => 'Submission',
+            'edit_item' => 'View Submission'
+        ],
+        'supports' => false,
+        'capability_type' => 'post',
+        'capabilities' => array(
+            'create_posts' => false,
+        ),
+        'map_meta_cap' => true
+    ];
+
+    register_post_type('submission', $args);
+}
+
 function show_submission_button($atts)
 {
     if (is_user_logged_in()) {
-        $id = get_current_user_id();
+        $id = um_profile_id();
         $id = is_array($atts) && isset($atts['text']) ? esc_attr(sprintf($atts['text'], $id)) : esc_attr($id);
         $url = site_url('/submission-page/');
         $url = add_query_arg('artist_id', $id, $url);
@@ -36,8 +61,6 @@ function show_submission_form()
     $curr_user = wp_get_current_user();
     $submit_url = get_rest_url(null, 'v1/submission-page/submit');
     $wpnonce = wp_nonce_field('wp_rest');
-//    $path = ARTKKO_SUBMISSIONS_PATH . 'includes/js/easycaptcha.min.js';
-//    wp_enqueue_script( 'script', ARTKKO_SUBMISSIONS_PATH . 'includes/js/easycaptcha.min.js', array ( 'jquery' ), 1.1, true);
     return <<<HTML
         <style>
            #artkko_submission_form {
@@ -180,6 +203,18 @@ function send_confirmation_to_customer($headers, $params)
     wp_mail($customer_email, $subject, $message, $headers);
 }
 
+function send_rejection_to_customer($headers, $params, $word)
+{
+    $customer_email = strtolower(trim(sanitize_email($params['email'])));
+    $customer_name = sanitize_text_field($params['name']);
+
+    $headers[] = "Reply-to: {$customer_name} <{$customer_email}>";
+    $subject = "Commission rejection";
+
+    $message = "<p>Your request was rejected. In your request contains prohibited word {$word}!</p>";
+    wp_mail($customer_email, $subject, $message, $headers);
+}
+
 function send_confirmation_to_artist($headers, $params)
 {
     $artist_email = strtolower(trim(sanitize_email($params['artist_email'])));
@@ -187,7 +222,6 @@ function send_confirmation_to_artist($headers, $params)
 
     $artist_name = sanitize_email($params['artist_name']);
     $customer_name = sanitize_text_field($params['name']);
-
 
     $headers[] = "Reply-to: {$artist_name} <{$artist_email}>";
     $subject = "New commission request";
@@ -232,6 +266,14 @@ function handle_submission_form($data)
 
     $headers[] = "From: {$admin_name} <{$admin_email}>";
     $headers[] = "Content-Type: text/html";
+
+    $filter = new BlacklistedWordFilterIterator();
+    list($contains, $word) = $filter->containsBlacklistedWords(explode(' ', $params['message']), true);
+    if ( $contains) {
+        send_rejection_to_customer($headers, $params, $word);
+        return new WP_Rest_Response("The submission was rejected. Check your email for details.", 200);
+    }
+
     send_confirmation_to_customer($headers, $params);
     send_confirmation_to_artist($headers, $params);
 
