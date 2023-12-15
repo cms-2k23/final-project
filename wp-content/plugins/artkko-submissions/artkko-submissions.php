@@ -28,9 +28,11 @@ function activate_artkko() {
             // Query - Create Table
             $sql = "CREATE TABLE `$customerTable` (";
             $sql .= " `id` int(11) NOT NULL auto_increment, ";
+            $sql .= " `submission_id` varchar(10) NOT NULL, ";
             $sql .= " `artist_id` varchar(10) NOT NULL, ";
             $sql .= " `customer_email` varchar(80) NOT NULL, ";
             $sql .= " `customer_name` varchar(100), ";
+            $sql .= " `commission_content` TEXT, ";
             $sql .= " `done` boolean NOT NULL, ";
             $sql .= " `due` date NOT NULL, ";
             $sql .= " PRIMARY KEY `customer_id` (`id`) ";
@@ -58,7 +60,8 @@ if (!class_exists('ArtkkoSubmissions')) {
         {
             include_once ARTKKO_SUBMISSIONS_PATH . 'includes/sanitization.php';
             include_once ARTKKO_SUBMISSIONS_PATH . 'option-page/option-page.php';
-            include_once ARTKKO_SUBMISSIONS_PATH . 'contact-form/contact-form.php';
+            include_once ARTKKO_SUBMISSIONS_PATH . 'views/contact-form.php';
+            include_once ARTKKO_SUBMISSIONS_PATH . 'views/submission-list.php';
         }
 
     }

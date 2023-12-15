@@ -14,27 +14,30 @@ add_filter('query_vars', 'register_custom_params');
 
 add_action('init', 'create_submissions_page');
 
+global $submissions_args;
+$submissions_args = [
+    'public' => true,
+    'has_archive' => true,
+    'menu_position' => 30,
+    'publicly_queryable' => false,
+    'labels' => [
+        'name' => 'submissions',
+        'singular_name' => 'submission',
+        'edit_item' => 'View Submission'
+    ],
+    'supports' => false,
+    'capability_type' => 'post',
+    'capabilities' => array(
+        'create_posts' => false,
+    ),
+    'map_meta_cap' => true,
+    'post_type' => 'submission',
+];
+
 function create_submissions_page()
 {
-    $args = [
-        'public' => true,
-        'has_archive' => true,
-        'menu_position' => 30,
-        'publicly_queryable' => false,
-        'labels' => [
-            'name' => 'Submissions',
-            'singular_name' => 'Submission',
-            'edit_item' => 'View Submission'
-        ],
-        'supports' => false,
-        'capability_type' => 'post',
-        'capabilities' => array(
-            'create_posts' => false,
-        ),
-        'map_meta_cap' => true
-    ];
-
-    register_post_type('submission', $args);
+    global $submissions_args;
+    register_post_type('submission', $submissions_args);
 }
 
 function show_submission_button($atts)
@@ -42,9 +45,9 @@ function show_submission_button($atts)
     if (is_user_logged_in()) {
         $id = um_profile_id();
         $id = is_array($atts) && isset($atts['text']) ? esc_attr(sprintf($atts['text'], $id)) : esc_attr($id);
-        $url = site_url('/submission-page/');
+        $url = site_url('/submission-form/');
         $url = add_query_arg('artist_id', $id, $url);
-        return '<html><a href="' . esc_url($url) . '">click me</a></html>';
+        return '<a href="' . esc_url($url) . '">Order comission</a>';
     }
     return '';
 }
@@ -58,7 +61,7 @@ function register_custom_params($vars)
 function show_submission_form()
 {
     $user_id = get_query_var('artist_id');
-    $user = get_user_by('id', $user_id );
+    $user = get_user_by('id', $user_id);
     $curr_user = wp_get_current_user();
     $submit_url = get_rest_url(null, 'v1/submission-page/submit');
     $wpnonce = wp_nonce_field('wp_rest');
@@ -137,7 +140,7 @@ function show_submission_form()
           <label>Deadline</label><br />
           <input type="date" name="deadline" required><br /><br />
           <label>Message</label><br />
-          <textarea name="message" rows="20" cols="50" required placeholder="Describe art you are dereaming of..."></textarea>
+          <textarea name="message" rows="20" cols="50" required placeholder="Describe art you are dereaming of..." maxlength="1000"></textarea>
           <br /><br />
           <div class="captchaTarget" 
             data-auto-easycaptcha 
@@ -204,13 +207,13 @@ function send_confirmation_to_customer($headers, $params)
     wp_mail($customer_email, $subject, $message, $headers);
 }
 
-function send_rejection_to_customer($headers, $params, $word)
+function send_system_rejection_to_customer($headers, $params, $word)
 {
     $customer_email = strtolower(trim(sanitize_email($params['email'])));
     $customer_name = sanitize_text_field($params['name']);
 
     $headers[] = "Reply-to: {$customer_name} <{$customer_email}>";
-    $subject = "Commission rejection";
+    $subject = "Commission rejected";
 
     $message = "<p>Your request was rejected. In your request contains prohibited word {$word}!</p>";
     wp_mail($customer_email, $subject, $message, $headers);
@@ -269,8 +272,8 @@ function handle_submission_form($data)
 
     $filter = new BlacklistedWordFilterIterator();
     list($contains, $word) = $filter->containsBlacklistedWords(explode(' ', $params['message']), true);
-    if ( $contains) {
-        send_rejection_to_customer($headers, $params, $word);
+    if ($contains) {
+        send_system_rejection_to_customer($headers, $params, $word);
         return new WP_Rest_Response("The submission was rejected. Check your email for details.", 200);
     }
 
@@ -282,9 +285,16 @@ function handle_submission_form($data)
     $customer_email = strtolower(trim(sanitize_email($params['email'])));
 
     $customer_name = sanitize_text_field($params['name']);
+    global $submissions_args;
+    $submissions = get_posts($submissions_args);
 
     $wpdb->insert($table_name, array
-        ('artist_id' => $params['artist_id'], 'customer_email' => $customer_email, 'customer_name' => $customer_name, 'done' => false,
+        ('submission_id' => $submissions[count($submissions) - 1]->ID,
+            'artist_id' => $params['artist_id'],
+            'customer_email' => $customer_email,
+            'customer_name' => $customer_name,
+            'commission_content' => $params['message'],
+            'done' => false,
             'due' => $params['deadline'])
     );
 
