@@ -57,7 +57,8 @@ function register_custom_params($vars)
 
 function show_submission_form()
 {
-    $user = get_user_by('id', get_query_var('artist_id'));
+    $user_id = get_query_var('artist_id');
+    $user = get_user_by('id', $user_id );
     $curr_user = wp_get_current_user();
     $submit_url = get_rest_url(null, 'v1/submission-page/submit');
     $wpnonce = wp_nonce_field('wp_rest');
@@ -105,10 +106,11 @@ function show_submission_form()
        <div id="form_error" style="background-color:red; color:#fff;"></div>
        <form id="artkko_submission_form">
           $wpnonce
+          <input type="text"hidden="hidden" readonly value="$user_id" name="artist_id" >
           <label>Artist Name</label><br />
-          <input type="text" disabled value="$user->user_firstname $user->user_lastname" name="artist_name"> <br /><br />
+          <input type="text"  readonly value="$user->user_firstname $user->user_lastname" name="artist_name"> <br /><br />
           <label>Artist Email</label><br />
-          <input type="text" disabled value="$user->user_email" name="artist_email"> <br /><br />
+          <input type="text" readonly value="$user->user_email" name="artist_email"> <br /><br />
           <hr>
           <label>Name</label><br />
           <input type="text" name="name" required value="$curr_user->user_firstname $curr_user->user_lastname"><br /><br />
@@ -116,7 +118,7 @@ function show_submission_form()
           <input type="text" name="email" required value="$curr_user->user_email"<br /><br />
           <label>Phone</label><br />
           <input type="text" id="phone_number" name="phone" minlength="11" maxlength="11" 
-             pattern="[0-9]{3}-[0-9]{3}-[0-9]{3}"><br /><br />
+             pattern="[0-9]{3}-[0-9]{3}-[0-9]{3}" placeholder="e.g. 123-456-789"><br /><br />
           <fieldset>
              <legend>How should I let you know your commission is done?</legend>
              <div>
@@ -135,7 +137,7 @@ function show_submission_form()
           <label>Deadline</label><br />
           <input type="date" name="deadline" required><br /><br />
           <label>Message</label><br />
-          <textarea name="message" rows="20" cols="50" required></textarea>
+          <textarea name="message" rows="20" cols="50" required placeholder="Describe art you are dereaming of..."></textarea>
           <br /><br />
           <div class="captchaTarget" 
             data-auto-easycaptcha 
@@ -143,7 +145,6 @@ function show_submission_form()
           </div>
           <button type="submit">Submit form</button>
        </form>
-       
        <script>       
           jQuery(document).ready(function($) {
               $('#phone_number').on('keyup', function() {
@@ -247,7 +248,6 @@ function send_confirmation_to_artist($headers, $params)
     wp_mail($customer_email, $subject, $message, $headers);
 }
 
-
 function handle_submission_form($data)
 {
     $params = $data->get_params();
@@ -276,6 +276,17 @@ function handle_submission_form($data)
 
     send_confirmation_to_customer($headers, $params);
     send_confirmation_to_artist($headers, $params);
+
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'artkko_submissions';
+    $customer_email = strtolower(trim(sanitize_email($params['email'])));
+
+    $customer_name = sanitize_text_field($params['name']);
+
+    $wpdb->insert($table_name, array
+        ('artist_id' => $params['artist_id'], 'customer_email' => $customer_email, 'customer_name' => $customer_name, 'done' => false,
+            'due' => $params['deadline'])
+    );
 
     return new WP_Rest_Response("The submission was accepted!!", 200);
 }

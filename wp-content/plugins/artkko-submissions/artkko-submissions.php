@@ -28,7 +28,7 @@ function activate_artkko() {
             // Query - Create Table
             $sql = "CREATE TABLE `$customerTable` (";
             $sql .= " `id` int(11) NOT NULL auto_increment, ";
-            $sql .= " `artist_id` int NOT NULL, ";
+            $sql .= " `artist_id` varchar(10) NOT NULL, ";
             $sql .= " `customer_email` varchar(80) NOT NULL, ";
             $sql .= " `customer_name` varchar(100), ";
             $sql .= " `done` boolean NOT NULL, ";

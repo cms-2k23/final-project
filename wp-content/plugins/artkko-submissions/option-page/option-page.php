@@ -22,6 +22,7 @@ function create_options_page()
         ->set_icon('dashicons-buddicons-activity')
         ->add_fields(array(
             Field::make('checkbox', 'artkko_plugin_active', __('Active')),
+            Field::make('text', 'artist_id', __('artist_id')),
             Field::make('text', 'artkko_customer_name', __('Name'))
                 ->set_attribute('placeholder', 'eg. Joe Doe')->set_help_text('Your name'),
             Field::make('text', 'artkko_customer_email', __('Email'))
