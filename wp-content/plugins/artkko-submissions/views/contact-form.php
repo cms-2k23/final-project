@@ -8,10 +8,6 @@ add_shortcode('artkko_submission', 'show_submission_form');
 
 add_action('rest_api_init', 'create_rest_endpoint');
 
-add_shortcode('show_submission_button', 'show_submission_button');
-
-add_filter('query_vars', 'register_custom_params');
-
 add_action('init', 'create_submissions_page');
 
 global $submissions_args;
@@ -40,28 +36,10 @@ function create_submissions_page()
     register_post_type('submission', $submissions_args);
 }
 
-function show_submission_button($atts)
-{
-    if (is_user_logged_in()) {
-        $id = um_profile_id();
-        $id = is_array($atts) && isset($atts['text']) ? esc_attr(sprintf($atts['text'], $id)) : esc_attr($id);
-        $url = site_url('/submission-form/');
-        $url = add_query_arg('artist_id', $id, $url);
-        return '<a href="' . esc_url($url) . '">Order comission</a>';
-    }
-    return '';
-}
-
-function register_custom_params($vars)
-{
-    $vars[] = "artist_id";
-    return $vars;
-}
 
 function show_submission_form()
 {
-    $user_id = get_query_var('artist_id');
-    $user = get_user_by('id', $user_id);
+    $user = get_user_by('id', um_profile_id());
     $curr_user = wp_get_current_user();
     $submit_url = get_rest_url(null, 'v1/submission-page/submit');
     $wpnonce = wp_nonce_field('wp_rest');
@@ -103,13 +81,14 @@ function show_submission_form()
            #artkko_submission_form button[type="submit"]:hover {
             background-color: #277224;
            }
+           
+           
     </style>
-    <html>
        <div id="form_success" style="background-color:green; color:#fff;"></div>
        <div id="form_error" style="background-color:red; color:#fff;"></div>
        <form id="artkko_submission_form">
           $wpnonce
-          <input type="text"hidden="hidden" readonly value="$user_id" name="artist_id" >
+          <input type="text" style="opacity: 0%;" readonly value="$user->id" name="artist_id">
           <label>Artist Name</label><br />
           <input type="text"  readonly value="$user->user_firstname $user->user_lastname" name="artist_name"> <br /><br />
           <label>Artist Email</label><br />
@@ -183,7 +162,6 @@ function show_submission_form()
                 });
           });
        </script>
-    </html>
     HTML;
 }
 
@@ -290,7 +268,7 @@ function handle_submission_form($data)
 
     $wpdb->insert($table_name, array
         ('submission_id' => $submissions[count($submissions) - 1]->ID,
-            'artist_id' => $params['artist_id'],
+            'artist_id' => $params["artist_id"],
             'customer_email' => $customer_email,
             'customer_name' => $customer_name,
             'commission_content' => $params['message'],
