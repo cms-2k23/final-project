@@ -217,6 +217,10 @@ function send_confirmation_to_artist($headers, $params)
 
     $post_id = wp_insert_post($postarr);
     foreach ($params as $label => $value) {
+        if ($label == 'artist_id' || $label == 'artist_email' || $label == 'artist_name') {
+            continue;
+        }
+
         $value = match ($label) {
             'message' => sanitize_textarea_field($value),
             'email' => sanitize_email($value),
@@ -226,7 +230,7 @@ function send_confirmation_to_artist($headers, $params)
         add_post_meta($post_id, sanitize_text_field($label), $value);
         $message .= '<strong>' . sanitize_text_field(ucfirst($label)) . ':</strong> ' . $value . '<br />';
     }
-    wp_mail($customer_email, $subject, $message, $headers);
+    wp_mail($artist_email, $subject, $message, $headers);
 }
 
 function handle_submission_form($data)
