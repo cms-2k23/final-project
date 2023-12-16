@@ -93,7 +93,7 @@ function show_submission_form()
            
            #artkko_submission_form button[type="submit"] {
                padding: 10px 20px;
-               background-color: #007BFF;
+               background-color: #3dd538;
                color: #fff;
                border: none;
                border-radius: 5px;
@@ -101,7 +101,7 @@ function show_submission_form()
            }
            
            #artkko_submission_form button[type="submit"]:hover {
-            background-color: #0056b3;
+            background-color: #277224;
            }
     </style>
     <html>
