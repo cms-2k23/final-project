@@ -61,7 +61,7 @@ if (!class_exists('ArtkkoSubmissions')) {
             include_once ARTKKO_SUBMISSIONS_PATH . 'includes/sanitization.php';
             include_once ARTKKO_SUBMISSIONS_PATH . 'option-page/option-page.php';
             include_once ARTKKO_SUBMISSIONS_PATH . 'views/contact-form.php';
-            include_once ARTKKO_SUBMISSIONS_PATH . 'views/submission-list.php';
+            include_once ARTKKO_SUBMISSIONS_PATH . 'includes/ultimate-member-tabs.php';
         }
 
     }

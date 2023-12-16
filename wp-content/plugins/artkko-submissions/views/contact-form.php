@@ -68,7 +68,7 @@ function show_submission_form()
     return <<<HTML
         <style>
            #artkko_submission_form {
-               width: 80%;
+               max-width: 800px;
                margin: 0 auto;
                padding: 20px;
                border: 1px solid #ccc;
