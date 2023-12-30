@@ -39,3 +39,4 @@ build.env
 deploy.env
 
 vendor/
+.DS_Store

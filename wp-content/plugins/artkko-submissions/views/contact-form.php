@@ -44,63 +44,124 @@ function show_submission_form()
     $submit_url = get_rest_url(null, 'v1/submission-page/submit');
     $wpnonce = wp_nonce_field('wp_rest');
     return <<<HTML
-        <style>
-           #artkko_submission_form {
-               max-width: 800px;
-               margin: 0 auto;
-               padding: 20px;
-               border: 1px solid #ccc;
-               border-radius: 5px;
-               align-content: center;
-           }
-           
-           #artkko_submission_form input[type="text"],
-           #artkko_submission_form input[type="date"],
-           #artkko_submission_form textarea, 
-           #artkko_submission_form fieldset{
-               width: 95%;
-               padding: 10px;
-               border: 1px solid #ccc;
-               border-radius: 5px;
-               margin: 0 auto 10px auto;
-           }
-           
-           #artkko_submission_form input[type="checkbox"] {
-            margin-right: 10px;
-           }
-           
-           #artkko_submission_form button[type="submit"] {
-               padding: 10px 20px;
-               background-color: #3dd538;
-               color: #fff;
-               border: none;
-               border-radius: 5px;
-               cursor: pointer;
-           }
-           
-           #artkko_submission_form button[type="submit"]:hover {
-            background-color: #277224;
-           }
-           
-           
+    <style>
+        #artkko_submission_form {
+            border: 1px solid #666 !important;
+            padding: 2em;
+            border-radius: 5px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            background-color: #111;
+        }
+
+        #artkko_submission_form input[type="text"],
+        #artkko_submission_form input[type="date"],
+        #artkko_submission_form textarea,
+        #artkko_submission_form fieldset {
+            border: 1px solid #ccc !important;
+            border-radius: 5px !important;
+            margin: 0 0 1.5em 0 !important;
+            color: #fff !important;
+            background-color: #1a1a1a !important;
+        }
+
+        #artkko_submission_form input:focus {
+            border: 1px solid var(--wp--preset--color--primary)!important;
+        }
+        #artkko_submission_form input[type="date"] {
+            padding: 0 12px !important;
+            height: 40px !important;
+            line-height: 32px !important;
+            width: 100%;
+            display: block !important;
+            -moz-border-radius: 2px;
+            -webkit-border-radius: 2px;
+            border-radius: 2px;
+            outline: 0 !important;
+            cursor: text !important;
+            font-size: 15px !important;
+            box-sizing: border-box !important;
+            box-shadow: none !important;
+            position: static;
+        }
+
+        #artkko_submission_form input[type="checkbox"] {
+            margin-right: 0.5em !important;
+            accent-color: var(--wp--preset--color--primary)
+        }
+
+        #artkko_submission_form button[type="submit"] {
+            width: fit-content !important;
+            align-self: center !important;
+            font-weight: bold !important;
+            background-color: var(--wp--preset--color--primary);
+            border: none;
+            border-radius: 5px;
+            padding: 0.75em 1em;
+            font-size: 14px;
+            cursor: pointer !important;
+        }
+
+        #artkko_submission_form button[type="submit"]:hover {
+            background-color: #89DB1D !important;
+        }
+
+        #artkko_submission_form > hr {
+            width: 100% !important;
+            border: 1px solid #666 !important;
+        }
+
+        #artist_id {
+            display: none !important;
+        }
+
+        #artkko_submission_form > label {
+            font-weight: 500 !important;
+            color: #fff;
+        }
+
+        #commission_message {
+            width: 100% !important;
+            overflow: hidden;
+            box-sizing: border-box;
+            resize: none;
+        }
+
+        #commission_message:focus {
+            border: 1px solid var(--wp--preset--color--primary) !important;
+        }
+
+        #popup_overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; /* High z-index to be on top of other content */
+        }
     </style>
-       <div id="form_success" style="background-color:green; color:#fff;"></div>
-       <div id="form_error" style="background-color:red; color:#fff;"></div>
-       <form id="artkko_submission_form">
+        <div id="form_success" style="background-color: var(--wp--preset--color--primary);color: #000;"></div>
+        <div id="form_error" style="background-color: #FF495C; color: #000;"></div>
+        <form id="artkko_submission_form">
           $wpnonce
-          <input type="text" style="opacity: 0%;" readonly value="$user->id" name="artist_id">
-          <label>Artist Name</label><br />
-          <input type="text"  readonly value="$user->user_firstname $user->user_lastname" name="artist_name"> <br /><br />
-          <label>Artist Email</label><br />
-          <input type="text" readonly value="$user->user_email" name="artist_email"> <br /><br />
+          <input type="text" id=artist_id readonly value="$user->id" name="artist_id">
+          <label>Artist name</label>
+          <input type="text" disabled value="$user->user_firstname $user->user_lastname" name="artist_name"> 
+          <label>Artist e-mail</label>
+          <input type="text" disabled value="$user->user_email" name="artist_email"> 
           <hr>
-          <label>Name</label><br />
-          <input type="text" name="name" required value="$curr_user->user_firstname $curr_user->user_lastname"><br /><br />
-          <label>Email</label><br />
-          <input type="text" name="email" required value="$curr_user->user_email"<br /><br />
-          <label>Phone</label><br />
-          <input type="text" id="phone_number" name="phone" minlength="11" maxlength="11" 
-             pattern="[0-9]{3}-[0-9]{3}-[0-9]{3}" placeholder="e.g. 123-456-789"><br /><br />
+          <label>Your name</label>
+          <input type="text" name="name" disabled required value="$curr_user->user_firstname $curr_user->user_lastname">
+          <label>Your e-mail</label>
+          <input type="text" name="email" disabled required value="$curr_user->user_email" />
+          <label>Your phone no.</label>
+          <input type="text" id="phone_number" name="phone" minlength="9" maxlength="9" 
+             pattern="[0-9]{9}" placeholder="e.g. 123456789">
           <fieldset>
              <legend>How should I let you know your commission is done?</legend>
              <div>
@@ -116,18 +177,27 @@ function show_submission_form()
                 <label for="check_box_call">Call</label>
              </div>
           </fieldset>
-          <label>Deadline</label><br />
-          <input type="date" name="deadline" required><br /><br />
-          <label>Message</label><br />
-          <textarea name="message" rows="20" cols="50" required placeholder="Describe art you are dereaming of..." maxlength="1000"></textarea>
-          <br /><br />
+          <label>Deadline</label>
+          <input id=deadline type="date" name="deadline" required>
+          <label>Message</label>
+          <textarea name="message" id="commission_message" required placeholder="Describe the artwork you're dreaming of..." maxlength="1000"
+          oninput='this.style.height = "";this.style.height = this.scrollHeight + "px"; updateCharacterCount()'></textarea>
+          <div id="charCount" style="margin-top: -1em;">0/1000 characters</div>
           <div class="captchaTarget" 
             data-auto-easycaptcha 
             data-okbtn-selector="#submit">
           </div>
           <button type="submit">Submit form</button>
        </form>
-       <script>       
+       <script>
+
+        function updateCharacterCount() {
+            var maxLength = 1000; // Set the maximum length
+            var textInput = document.getElementById("commission_message").value;
+            var charCount = textInput.length;
+            document.getElementById("charCount").textContent = charCount + "/" + maxLength + " characters";
+        }
+    
           jQuery(document).ready(function($) {
               $('#phone_number').on('keyup', function() {
                   const phone_number = $(this).val();
@@ -270,15 +340,18 @@ function handle_submission_form($data)
     global $submissions_args;
     $submissions = get_posts($submissions_args);
 
-    $wpdb->insert($table_name, array
-        ('submission_id' => $submissions[count($submissions) - 1]->ID,
+    $wpdb->insert(
+        $table_name,
+        array(
+            'submission_id' => $submissions[count($submissions) - 1]->ID,
             'artist_id' => $params["artist_id"],
             'customer_email' => $customer_email,
             'customer_name' => $customer_name,
             'commission_content' => $params['message'],
             'done' => false,
-            'due' => $params['deadline'])
+            'due' => $params['deadline']
+        )
     );
 
-    return new WP_Rest_Response("The submission was accepted!!", 200);
+    return new WP_Rest_Response("The submission was accepted!", 200);
 }
