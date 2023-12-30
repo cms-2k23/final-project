@@ -49,7 +49,6 @@ function show_submission_form()
             border: 1px solid #666 !important;
             padding: 2em;
             border-radius: 5px !important;
-            display: flex !important;
             flex-direction: column !important;
             background-color: #111;
         }
@@ -100,6 +99,9 @@ function show_submission_form()
             padding: 0.75em 1em;
             font-size: 14px;
             cursor: pointer !important;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
         }
 
         #artkko_submission_form button[type="submit"]:hover {
@@ -130,20 +132,6 @@ function show_submission_form()
         #commission_message:focus {
             border: 1px solid var(--wp--preset--color--primary) !important;
         }
-
-        #popup_overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000; /* High z-index to be on top of other content */
-        }
     </style>
         <div id="form_success" style="background-color: var(--wp--preset--color--primary);color: #000;"></div>
         <div id="form_error" style="background-color: #FF495C; color: #000;"></div>
@@ -151,14 +139,14 @@ function show_submission_form()
           $wpnonce
           <input type="text" id=artist_id readonly value="$user->id" name="artist_id">
           <label>Artist name</label>
-          <input type="text" disabled value="$user->user_firstname $user->user_lastname" name="artist_name"> 
+          <input type="text" readonly value="$user->user_firstname $user->user_lastname" name="artist_name"> 
           <label>Artist e-mail</label>
-          <input type="text" disabled value="$user->user_email" name="artist_email"> 
+          <input type="text" readonly value="$user->user_email" name="artist_email"> 
           <hr>
           <label>Your name</label>
-          <input type="text" name="name" disabled required value="$curr_user->user_firstname $curr_user->user_lastname">
+          <input type="text" name="name" readonly required value="$curr_user->user_firstname $curr_user->user_lastname">
           <label>Your e-mail</label>
-          <input type="text" name="email" disabled required value="$curr_user->user_email" />
+          <input type="text" name="email" readonly required value="$curr_user->user_email" />
           <label>Your phone no.</label>
           <input type="text" id="phone_number" name="phone" minlength="9" maxlength="9" 
              pattern="[0-9]{9}" placeholder="e.g. 123456789">
