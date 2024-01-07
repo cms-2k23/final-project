@@ -17,8 +17,8 @@ $submissions_args = [
     'menu_position' => 30,
     'publicly_queryable' => false,
     'labels' => [
-        'name' => 'submissions',
-        'singular_name' => 'submission',
+        'name' => 'Submissions',
+        'singular_name' => 'Submission',
         'edit_item' => 'View Submission'
     ],
     'supports' => false,
