@@ -3,8 +3,8 @@
 /**
  *
  * Plugin Name: Artkko Submissions
- * Description: This plugin allows users to make submissions fot commissions from their favourite artist.
- * Version: 0.0.1
+ * Description: This plugin allows users to request commissions from their favourite artists.
+ * Version: 1.1.0
  * Text Domain: options-plugin
  *
  */

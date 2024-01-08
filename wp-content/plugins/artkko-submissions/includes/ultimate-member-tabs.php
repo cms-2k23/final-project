@@ -65,7 +65,7 @@ function um_profile_content_ld_course_list($args)
     $table_name = $wpdb->prefix . "artkko_submissions";
     $retrieve_data = $wpdb->get_results("SELECT * FROM $table_name where artist_id = '$artist_id' and done = 0");
 
-    ?>
+?>
     <style>
         input {
             padding: 10px 20px;
@@ -76,48 +76,57 @@ function um_profile_content_ld_course_list($args)
         }
 
         .reject-btn {
-            background-color: #dc3545;
+            background-color: #FF495C;
+            color: #000;
+            font-weight: 600;
         }
 
         .reject-btn:hover {
-            background-color: #CC0000;
+            background-color: #DB404F;
         }
 
         .submit-btn {
-            background-color: #3dd538;
+            background-color: var(--wp--preset--color--primary);
+            color: #000;
+            font-weight: 600;
         }
 
         .submit-btn:hover {
-            background-color: #277224;
+            background-color: #89DB1D;
         }
 
         table.fixed {
             table-layout: fixed;
         }
 
-
-        input[type=file]::file-selector-button {
+        input[type="file"]::file-selector-button {
             padding: 10px 20px;
-            background-color: #3dd538;
-            color: #fff;
+            background-color: var(--wp--preset--color--primary);
+            color: #000;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-weight: 600;
         }
 
-        input[type=file]::file-selector-button:hover {
-            background-color: #277224;
+        input[type="file"]::file-selector-button:hover {
+            background-color: #89DB1D;
         }
+
 
         .blog-card {
             display: flex;
             flex-direction: row;
-            background: transparent;
-            border-bottom: 1px solid white;
+            background: #1a1a1a !important;
+            border: 1px solid #424242 !important;
+            border-radius: 5px !important;
             overflow: hidden;
             margin-bottom: 15px;
         }
 
+        .post-description {
+            color: #fff;
+        }
 
         .post-image {
             transition: opacity 0.3s ease;
@@ -177,63 +186,62 @@ function um_profile_content_ld_course_list($args)
         }
     </style>
     <?php foreach ($retrieve_data as $row) : ?>
-    <article class="blog-card">
-        <div class="article-details">
-            <h4 class="post-category">From: <?= $row->customer_name ?></h4><br>
-            <h4 class="post-category">Due to: <?= $row->due ?></h4>
-            <p class="post-description">
-                <?= $row->commission_content ?>
-            </p>
-            <form method="post" enctype='multipart/form-data'>
+        <article class="blog-card">
+            <div class="article-details">
+                <h4 class="post-category">From: <?= $row->customer_name ?></h4><br>
+                <h4 class="post-category">Due: <?= $row->due ?></h4>
+                <p class="post-description">
+                    “<?= $row->commission_content ?>”
+                </p>
+                <form method="post" enctype='multipart/form-data'>
+                    <?php
+                    $delRow = "delete_submission_{$row->id}";
+                    $subRow = "submit_submission_{$row->id}";
+                    $image_upload_by_id = "file_upload_{$row->id}";
+                    ?>
+                    <table class="fixed">
+                        <tr>
+                            <td><input class='reject-btn' type='submit' value="Reject" name=<?= $delRow ?>></td>
+                            <td><input id=image_upload_button style="max-width: 250px;" type='file' accept="image/*" name='<?= $image_upload_by_id ?>' id='<?= $image_upload_by_id ?>'></td>
+                            <td><input class='submit-btn' type='submit' value="Upload" name=<?= $subRow ?>></td>
+                        </tr>
+                    </table>
+                </form>
+
+
                 <?php
-                $delRow = "delete_submission_{$row->id}";
-                $subRow = "submit_submission_{$row->id}";
-                $image_upload_by_id = "file_upload_{$row->id}";
+                if (isset($_POST[$delRow])) {
+                    $headers[] = "Reply-to: {$row->customer_name} <{$row->customer_email}>";
+                    $subject = "Commission rejected";
+                    $message = "<p>Your request was rejected by artist. We are so sorry!</p>";
+                    wp_mail($row->customer_email, $subject, $message, $headers,);
+
+                    $wpdb->delete($table_name, array('id' => $row->id));
+                    wp_delete_post($row->submission_id);
+                    echo "<meta http-equiv='refresh' content='0'>";
+                }
+
+                if (isset($_POST[$subRow])) {
+
+                    $attachment_id = media_handle_upload($image_upload_by_id, $_POST['post_id']);
+                    $attachments = get_attached_file($attachment_id);
+
+                    $headers[] = "Reply-to: {$row->customer_name} <{$row->customer_email}>";
+                    $subject = "Commission completed";
+                    $message = "<p>Your request was completed!</p>";
+                    wp_mail($row->customer_email, $subject, $message, $headers, array($attachments));
+                    wp_delete_attachment($attachment_id, true);
+
+                    $wpdb->update($table_name, array('done' => 1), array('ID' => $row->id));
+                    echo "<meta http-equiv='refresh' content='0'>";
+                }
                 ?>
-                <table class="fixed">
-                    <tr>
-                        <td><input class='reject-btn' type='submit' value="Won't do" name=<?= $delRow ?>></td>
-                        <td><input style="max-width: 250px;" type='file' accept="image/*"
-                                   name='<?= $image_upload_by_id ?>' id='<?= $image_upload_by_id ?>'></td>
-                        <td><input class='submit-btn' type='submit' value="Submit" name=<?= $subRow ?>></td>
-                    </tr>
-                </table>
-            </form>
+            </div>
+        </article>
 
+    <?php endforeach; ?>
 
-            <?php
-            if (isset($_POST[$delRow])) {
-                $headers[] = "Reply-to: {$row->customer_name} <{$row->customer_email}>";
-                $subject = "Commission rejected";
-                $message = "<p>Your request was rejected by artist. We are so sorry!</p>";
-                wp_mail($row->customer_email, $subject, $message, $headers,);
-
-                $wpdb->delete($table_name, array('id' => $row->id));
-                wp_delete_post($row->submission_id);
-                echo "<meta http-equiv='refresh' content='0'>";
-            }
-
-            if (isset($_POST[$subRow])) {
-
-                $attachment_id = media_handle_upload($image_upload_by_id, $_POST['post_id']);
-                $attachments = get_attached_file($attachment_id);
-
-                $headers[] = "Reply-to: {$row->customer_name} <{$row->customer_email}>";
-                $subject = "Commission completed";
-                $message = "<p>Your request was completed! $attachment_id</p>";
-                wp_mail($row->customer_email, $subject, $message, $headers, array($attachments));
-                wp_delete_attachment($attachment_id, true);
-
-                $wpdb->update($table_name, array('done' => 1), array('ID' => $row->id));
-                echo "<meta http-equiv='refresh' content='0'>";
-            }
-            ?>
-        </div>
-    </article>
-
-<?php endforeach; ?>
-
-    <?php
+<?php
 }
 
 add_action('um_profile_content_ld_course_list', 'um_profile_content_ld_course_list');
@@ -245,20 +253,20 @@ add_action('um_profile_content_ld_course_list', 'um_profile_content_ld_course_li
  */
 function um_profile_content_uo_learndash_certificates($args)
 {
-    ?>
+?>
     <div>
         <?php
         if (!um_is_myprofile()) {
             echo do_shortcode('[artkko_submission]');
         } else {
-            ?>
+        ?>
             <div>Nothing to see here :)</div>
-            <?php
+        <?php
         }
         ?>
     </div>
 
-    <?php
+<?php
 }
 
 add_action('um_profile_content_uo_learndash_certificates', 'um_profile_content_uo_learndash_certificates');
