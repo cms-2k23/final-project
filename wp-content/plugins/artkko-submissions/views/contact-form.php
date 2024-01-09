@@ -251,7 +251,7 @@ function send_system_rejection_to_customer($headers, $params, $word)
     $headers[] = "Reply-to: {$customer_name} <{$customer_email}>";
     $subject = "Commission rejected";
 
-    $message = "<p>Your request was rejected. In your request contains prohibited word {$word}!</p>";
+    $message = "<p>Your request was rejected.\n\nIt contained a prohibited word \"{$word}\"!</p>";
     wp_mail($customer_email, $subject, $message, $headers);
 }
 
@@ -284,6 +284,10 @@ function send_confirmation_to_artist($headers, $params)
             'email' => sanitize_email($value),
             default => sanitize_text_field($value),
         };
+
+        if ($label == 'check_box_email') {
+            $label = 'Contact via e-mail?';
+        }
 
         add_post_meta($post_id, sanitize_text_field($label), $value);
         $message .= '<strong>' . sanitize_text_field(ucfirst($label)) . ':</strong> ' . $value . '<br />';

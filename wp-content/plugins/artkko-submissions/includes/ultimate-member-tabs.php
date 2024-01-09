@@ -101,18 +101,13 @@ function um_profile_content_ld_course_list($args)
 
         input[type="file"]::file-selector-button {
             padding: 10px 20px;
-            background-color: var(--wp--preset--color--primary);
-            color: #000;
-            border: none;
+            background-color: transparent;
+            color: var(--wp--preset--color--primary);
+            border: 1px solid var(--wp--preset--color--primary);
             border-radius: 5px;
             cursor: pointer;
             font-weight: 600;
         }
-
-        input[type="file"]::file-selector-button:hover {
-            background-color: #89DB1D;
-        }
-
 
         .blog-card {
             display: flex;
@@ -202,7 +197,7 @@ function um_profile_content_ld_course_list($args)
                     <table class="fixed">
                         <tr>
                             <td><input class='reject-btn' type='submit' value="Reject" name=<?= $delRow ?>></td>
-                            <td><input id=image_upload_button style="max-width: 250px;" type='file' accept="image/*" name='<?= $image_upload_by_id ?>' id='<?= $image_upload_by_id ?>'></td>
+                            <td><input id=image_upload_button style="max-width: 300px;" type='file' accept="image/*" name='<?= $image_upload_by_id ?>' id='<?= $image_upload_by_id ?>'></td>
                             <td><input class='submit-btn' type='submit' value="Upload" name=<?= $subRow ?>></td>
                         </tr>
                     </table>
